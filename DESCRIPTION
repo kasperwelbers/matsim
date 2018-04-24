@@ -1,0 +1,20 @@
+Package: matsim
+Version: 0.1.1
+Date: 2018-03-23
+Title: Sparse matrix multiplication with threshold or top_n
+Description: Basically crossprod for sparse matrices, but with the option to filter results based on a threshold or top_n highest scores. Filtering occurs on the fly, to prevent running out of memory.  
+Author: Kasper Welbers
+Maintainer: Kasper Welbers <kasperwelbers@gmail.com>
+Depends: 
+    R (>= 3.2.0), 
+    Matrix (>= 1.2)
+Imports: 
+    Rcpp (>= 0.12.12),
+    RcppEigen (>= 0.3.3.4.0)
+LinkingTo: Rcpp, RcppEigen, RcppProgress
+LazyData: true
+Encoding: UTF-8
+License: GPL-3
+URL: http://github.com/kasperwelbers/matsim
+Roxygen: list(wrap = FALSE)
+RoxygenNote: 6.0.1
