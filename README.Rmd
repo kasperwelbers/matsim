@@ -27,10 +27,18 @@ tcrossprod_sparse(m, min_value = 0, only_upper = F, diag = F)
 tcrossprod_sparse(m, min_value = 0, only_upper = T, diag = F)
 tcrossprod_sparse(m, min_value = 0.2, only_upper = T, diag = F)
 tcrossprod_sparse(m, min_value = 0, only_upper = T, diag = F, top_n = 1)
+
+## filtering by group/date. Documents have to be in the same group, or within the given date range
+m = Matrix::rsparsematrix(10,10,0.5)
+tcrossprod_sparse(m, group = c(1,1,1,2,2,2,3,3,3,3))
+
+date = seq.Date(as.Date('2010-01-01'), as.Date('2010-01-10'), by=1)
+tcrossprod_sparse(m, date = date, lwindow = 1, rwindow = 1)
+tcrossprod_sparse(m, date = date, lwindow = 2, rwindow = 2)
 ```
 
 Speed seems to be comparable to Matrix::crossprod(), with some speed-ups if filtering is used.
-This needs to be more properly tested while taking memory into account.
+(This needs to be more properly tested)
 
 ```{r}
 m = abs(Matrix::rsparsematrix(3000,10000,0.1))
@@ -61,14 +69,12 @@ microbenchmark(tcrossprod_sparse(m, min_value = 0.5, only_upper = T, diag = F),
                times=5)
 ```
 
-Now, using a 'large' matrix (50.000 rows), that would normally crash unless you have a good chunk of memory (worst case scenario: 50.000 * 50.000 * 8 bytes). Here we use the top_n filter, for which the required memory is at most nrow(m) * top_n.
-
-It will still take a while though, since you still have (at worst) 50.000 * 50.000 combinations. So this is where the verbose argument is usefull.
+Now, using a 'large' matrix (50.000 rows), that would normally crash unless you have a good chunk of memory (worst case scenario: 50.000 * 50.000 * 8 bytes). Here we use the top_n filter, for which the required memory is at most nrow(m) * top_n * 8 bytes.
 
 ```{r}
-m = abs(Matrix::rsparsematrix(50000,10000,0.02))
+m = abs(Matrix::rsparsematrix(50000,50000,0.001))
 format(object.size(m), 'Mb')
 
-cp = tcrossprod_sparse(m, top_n = 10, verbose=T)
+cp = tcrossprod_sparse(m, top_n = 10)
 length(cp@x)
 ```

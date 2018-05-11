@@ -12,6 +12,7 @@ Imports:
     Rcpp (>= 0.12.12),
     RcppEigen (>= 0.3.3.4.0)
 LinkingTo: Rcpp, RcppEigen, RcppProgress
+SystemRequirements: C++11
 LazyData: true
 Encoding: UTF-8
 License: GPL-3

@@ -5,3 +5,7 @@ tcrossprod_with_filters_cpp <- function(m1, m2, min_value = 0, only_upper = FALS
     .Call('_matsim_tcrossprod_with_filters_cpp', PACKAGE = 'matsim', m1, m2, min_value, only_upper, diag, top_n, verbose)
 }
 
+tcrossprod_cpp <- function(m1, m2, min_value = 0, top_n = 0L, diag = TRUE, only_upper = FALSE, group1 = NULL, group2 = NULL, order1 = NULL, order2 = NULL, lwindow = 0L, rwindow = 0L, verbose = FALSE) {
+    .Call('_matsim_tcrossprod_cpp', PACKAGE = 'matsim', m1, m2, min_value, top_n, diag, only_upper, group1, group2, order1, order2, lwindow, rwindow, verbose)
+}
+

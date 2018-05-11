@@ -23,9 +23,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tcrossprod_cpp
+Eigen::SparseMatrix<double> tcrossprod_cpp(Eigen::SparseMatrix<double>& m1, Eigen::SparseMatrix<double>& m2, double min_value, int top_n, bool diag, bool only_upper, Rcpp::Nullable<Rcpp::StringVector> group1, Rcpp::Nullable<Rcpp::StringVector> group2, Rcpp::Nullable<Rcpp::NumericVector> order1, Rcpp::Nullable<Rcpp::NumericVector> order2, int lwindow, int rwindow, bool verbose);
+RcppExport SEXP _matsim_tcrossprod_cpp(SEXP m1SEXP, SEXP m2SEXP, SEXP min_valueSEXP, SEXP top_nSEXP, SEXP diagSEXP, SEXP only_upperSEXP, SEXP group1SEXP, SEXP group2SEXP, SEXP order1SEXP, SEXP order2SEXP, SEXP lwindowSEXP, SEXP rwindowSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix<double>& >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< Eigen::SparseMatrix<double>& >::type m2(m2SEXP);
+    Rcpp::traits::input_parameter< double >::type min_value(min_valueSEXP);
+    Rcpp::traits::input_parameter< int >::type top_n(top_nSEXP);
+    Rcpp::traits::input_parameter< bool >::type diag(diagSEXP);
+    Rcpp::traits::input_parameter< bool >::type only_upper(only_upperSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::StringVector> >::type group1(group1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::StringVector> >::type group2(group2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type order1(order1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type order2(order2SEXP);
+    Rcpp::traits::input_parameter< int >::type lwindow(lwindowSEXP);
+    Rcpp::traits::input_parameter< int >::type rwindow(rwindowSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(tcrossprod_cpp(m1, m2, min_value, top_n, diag, only_upper, group1, group2, order1, order2, lwindow, rwindow, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_matsim_tcrossprod_with_filters_cpp", (DL_FUNC) &_matsim_tcrossprod_with_filters_cpp, 7},
+    {"_matsim_tcrossprod_cpp", (DL_FUNC) &_matsim_tcrossprod_cpp, 13},
     {NULL, NULL, 0}
 };
 
