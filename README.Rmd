@@ -2,6 +2,8 @@
 title: "README"
 author: Kasper Welbers
 output: md_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 Example
@@ -35,6 +37,19 @@ tcrossprod_sparse(m, group = c(1,1,1,2,2,2,3,3,3,3))
 date = seq.Date(as.Date('2010-01-01'), as.Date('2010-01-10'), by=1)
 tcrossprod_sparse(m, date = date, lwindow = 1, rwindow = 1)
 tcrossprod_sparse(m, date = date, lwindow = 2, rwindow = 2)
+
+## using conditional probability
+m = abs(Matrix::rsparsematrix(10,10,0.5))
+m[m>0] = 1
+
+t(t(tcrossprod_sparse(m)) / rowSums(m))
+tcrossprod_sparse(m, rowsum_div = T)
+
+## using the min function
+m = abs(Matrix::rsparsematrix(10,10,0.5))
+
+tcrossprod_sparse(m, crossfun = 'min')
+tcrossprod_sparse(m, crossfun = 'min', rowsum_div = T) ## what percentage of 
 ```
 
 Speed seems to be comparable to Matrix::crossprod(), with some speed-ups if filtering is used.
@@ -56,25 +71,38 @@ identical(as(cp1, 'dgCMatrix'), as(cp2, 'dgCMatrix'))
 ## regular
 microbenchmark(tcrossprod_sparse(m),
                tcrossprod((m)),
-               times=5)
+               times=2)
 
 ## only calculate upper triangle and do not calculate diagonal
 microbenchmark(tcrossprod_sparse(m, only_upper = T, diag = F),
                tcrossprod((m)),
-               times=5)
+               times=2)
 
 ## add minimum value
 microbenchmark(tcrossprod_sparse(m, min_value = 0.5, only_upper = T, diag = F),
                tcrossprod((m)),
-               times=5)
+               times=2)
 ```
 
 Now, using a 'large' matrix (50.000 rows), that would normally crash unless you have a good chunk of memory (worst case scenario: 50.000 * 50.000 * 8 bytes). Here we use the top_n filter, for which the required memory is at most nrow(m) * top_n * 8 bytes.
 
 ```{r}
-m = abs(Matrix::rsparsematrix(50000,50000,0.001))
+m = abs(Matrix::rsparsematrix(50000,20000,0.001))
 format(object.size(m), 'Mb')
 
-cp = tcrossprod_sparse(m, top_n = 10)
+date = seq.Date(as.Date('1000-01-01'), as.Date('3010-01-10'), by=2)[1:nrow(m)]
+cp1 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=15, batchsize=10000, verbose=T)
+cp2 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=15, batchsize=50000, verbose=T)
+
+## nog niet ok
+identical(cp1,cp2)
+sum(cp1)
+sum(cp2)
+
+microbenchmark(cp1 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=10, verbose=T, batchsize=1000),
+               cp2 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=10, verbose=T, batchsize=100000), times=1)
+
+
+cp = tcrossprod_sparse(m, top_n = 10, verbose=T)
 length(cp@x)
 ```

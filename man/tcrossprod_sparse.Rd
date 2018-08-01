@@ -4,21 +4,44 @@
 \alias{tcrossprod_sparse}
 \title{The tcrossprod function for sparse matrices, with output filters applied on the fly to reduce memory usage.}
 \usage{
-tcrossprod_sparse(m1, m2 = NULL, min_value = 0, only_upper = F,
-  diag = T, top_n = NULL, verbose = F)
+tcrossprod_sparse(m, m2 = NULL, min_value = 0, only_upper = F, diag = T,
+  top_n = NULL, rowsum_div = F, crossfun = "prod", group = NULL,
+  group2 = NULL, date = NULL, date2 = NULL, lwindow = 1, rwindow = 1,
+  date_unit = c("days", "hours", "minutes", "seconds"), batchsize = 10000,
+  verbose = F)
 }
 \arguments{
-\item{m1}{A dgCMatrix}
+\item{m}{A dgCMatrix}
 
 \item{m2}{A dgCMatrix}
 
 \item{min_value}{a numerical value, specifying the threshold for including a score in the output}
 
-\item{only_upper}{if true, only the upper triangle of the matrix is returned. Only possible for symmetrical output (m1 and m2 have same number of columns)}
+\item{only_upper}{if true, only the upper triangle of the matrix is returned. Only possible for symmetrical output (m and m2 have same number of columns)}
 
-\item{diag}{if false, the diagonal of the matrix is not returned. Only possible for symmetrical output (m1 and m2 have same number of columns)}
+\item{diag}{if false, the diagonal of the matrix is not returned. Only possible for symmetrical output (m and m2 have same number of columns)}
 
-\item{top_n}{an integer, specifying the top number of strongest scores for each column in m1}
+\item{top_n}{an integer, specifying the top number of strongest scores for each column in m}
+
+\item{rowsum_div}{if true, divide crossproduct by column sums of m. (this has to happen within the loop for min_value and top_n filtering)}
+
+\item{crossfun}{The function used in the vector operations. Normally this is the "prod", for product (dot product). Here we also allow (currently only) the "min", for minimum value. We use this in our document overlap_pct score.}
+
+\item{group}{Optionally, a character vector that specifies a group (e.g., source) for each row in m. If given, only pairs of rows with the same group are calculated.}
+
+\item{group2}{If m2 and group are used, group2 has to be used to specify the groups for the rows in m2 (otherwise group will be ignored)}
+
+\item{date}{Optionally, a character vector that specifies a date for each row in m. If given, only pairs of rows within a given date range (see lwindow, rwindow and date_unit) are calculated.}
+
+\item{date2}{If m2 and date are used, date2 has to be used to specify the date for the rows in m2 (otherwise date will be ignored)}
+
+\item{lwindow}{If date (and date2) are used, lwindow determines the left side of the date window. Also see date_unit.}
+
+\item{rwindow}{Like lwindow, but for the right side.}
+
+\item{date_unit}{The date unit used in lwindow and rwindow. Supports "days", "hours", "minutes" and "seconds". Note that refers to the time distance between two rows ("days" doesn't refer to calendar days, but to a time of 24 hours)}
+
+\item{batchsize}{experimental}
 
 \item{verbose}{if TRUE, report progress}
 }
