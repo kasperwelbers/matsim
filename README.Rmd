@@ -84,25 +84,21 @@ microbenchmark(tcrossprod_sparse(m, min_value = 0.5, only_upper = T, diag = F),
                times=2)
 ```
 
-Now, using a 'large' matrix (50.000 rows), that would normally crash unless you have a good chunk of memory (worst case scenario: 50.000 * 50.000 * 8 bytes). Here we use the top_n filter, for which the required memory is at most nrow(m) * top_n * 8 bytes.
 
-```{r}
+Now, using a large matrix (50,000 rows), that would normally crash unless you have a good chunk of memory (worst case scenario: 50.000 \* 50.000 \* 8 bytes). Here we use the top_n filter, for which the required memory is at most nrow(m) \* top_n \* 8 bytes. We also use the verbose option to display a progress bar.
+
+```{r, eval=F}
 m = abs(Matrix::rsparsematrix(50000,20000,0.001))
-format(object.size(m), 'Mb')
-
-date = seq.Date(as.Date('1000-01-01'), as.Date('3010-01-10'), by=2)[1:nrow(m)]
-cp1 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=15, batchsize=10000, verbose=T)
-cp2 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=15, batchsize=50000, verbose=T)
-
-## nog niet ok
-identical(cp1,cp2)
-sum(cp1)
-sum(cp2)
-
-microbenchmark(cp1 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=10, verbose=T, batchsize=1000),
-               cp2 = tcrossprod_sparse(m, date=date, lwindow = 10, rwindow=10, verbose=T, batchsize=100000), times=1)
-
 
 cp = tcrossprod_sparse(m, top_n = 10, verbose=T)
-length(cp@x)
 ```
+
+Finally, we'll use the group/date filter, which very large matrices (1,000,000 rows) to be processed by limiting comparisons to articles within the same group and/or date range.  
+
+```{r, eval=F}
+m = abs(Matrix::rsparsematrix(1000000,20000,0.001))
+
+date = seq.Date(as.Date('1000-01-01'), as.Date('4010-01-10'), by=1)[1:nrow(m)] ## just to make 1,000,000 days
+cp = tcrossprod_sparse(m, date=date, lwindow = 15, rwindow=15, verbose=T)
+```
+

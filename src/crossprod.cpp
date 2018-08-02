@@ -12,23 +12,19 @@ using namespace Rcpp;
 
 void fill_triples(std::vector<Eigen::Triplet<double> >& tl, std::vector<double>& res, 
                   const std::vector<std::tuple<double,double,int> >& index1, const std::vector<std::tuple<double,double,int> >& index2,
-                  int offset, const std::vector<double>& rowsum, int i, double min_value, int top_n, bool rowsum_div){
+                  int offset, int i, double min_value, int top_n){
   // fill the triples based on the results per row (i), using one of two options: top_n filtering or regular
   // the use_pair makes it somewhat complicated, but is necessary because res is a vector with only the results for pairs used for the current row. 
   // the positions in use_pair are the actual positions, and the true values match the positions in res.
   if (top_n > 0 && top_n < res.size()) {
     std::vector<std::pair<double,int> > res_index = index_and_sort_top_n<double>(res, top_n, offset);
     for (int res_i = 0; res_i < top_n; res_i++) {
-      if (rowsum_div) 
-        res_index[res_i].first = res_index[res_i].first / rowsum[res_index[res_i].second];
       if (res_index[res_i].first > min_value)
         tl.push_back(Eigen::Triplet<double>(std::get<2>(index1[i]), std::get<2>(index2[res_index[res_i].second]), res_index[res_i].first));
     }
     
   } else {
     for (int res_i = 0; res_i < res.size(); res_i++) {
-      if (rowsum_div) 
-        res[res_i] = res[res_i] / rowsum[res_i+offset];
       if (res[res_i] > min_value)
         tl.push_back(Eigen::Triplet<double>(std::get<2>(index1[i]), std::get<2>(index2[res_i+offset]), res[res_i]));
     }
@@ -55,14 +51,17 @@ Eigen::SparseMatrix<double> batched_tcrossprod_cpp(Eigen::SparseMatrix<double>& 
                                                    int lwindow=0, int rwindow=0,
                                                    bool verbose=false, int batchsize = 10000) {
   if (m1.cols() != m2.cols()) stop("m1 and m2 need to have the same number of columns");
-  
-  
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
   std::vector<std::tuple<double,double,int> > index1, index2;
   index1 = create_index(group1,order1);
   index2 = create_index(group2,order2);
   
-  m1 = sm_sort(m1, index1, true);
-  m2 = sm_sort(m2, index2, false);
+  // temp hack to prevent useless batches. Once everything is tested we should make a separate tcrossprod_cpp function without group and order
+  bool not_batched = unique(group1).size() == 1 && unique(group2).size() == 1 && unique(order1).size() == 1 && unique(order2).size() == 1;
+  if (not_batched) batchsize = m1.rows();
+    
+  m1 = sm_sort(m1, index1, true);   // sort and transpose m1
+  m2 = sm_sort(m2, index2, false);  // only sort m2
   
   std::vector<double> rowsum;
   if (rowsum_div) rowsum = get_colsum(m1);
@@ -100,7 +99,6 @@ Eigen::SparseMatrix<double> batched_tcrossprod_cpp(Eigen::SparseMatrix<double>& 
   for (int i = 0; i < rows; i++) {
     // CREATE BATCH
     if (i % batchsize == 0) {
-      offset = i;
       i_end = i + (batchsize - 1);
       if (i_end > rows) i_end = rows - 1;
       batch_indices = find_positions(index2, std::get<0>(index1[i]),
@@ -108,7 +106,8 @@ Eigen::SparseMatrix<double> batched_tcrossprod_cpp(Eigen::SparseMatrix<double>& 
                                      std::get<1>(index1[i]) - lwindow,
                                      std::get<1>(index1[i_end]) + rwindow);
       m2_batch = m2.middleRows(batch_indices.first, batch_indices.second - batch_indices.first);
-    }
+      offset = batch_indices.first;
+    } 
     std::vector<double> res(m2_batch.rows());
     
     
@@ -142,9 +141,14 @@ Eigen::SparseMatrix<double> batched_tcrossprod_cpp(Eigen::SparseMatrix<double>& 
         if (fun_min) res[it2.row()] += std::min(it1.value(), it2.value());
       }
     }
+    if (rowsum_div) {
+      for (int res_i = 0; res_i < res.size(); res_i++) {
+        if (rowsum[res_i+offset] > 0) res[res_i] = res[res_i] / rowsum[res_i+offset];
+      }
+    }
     
     // SAVE VALUES WITH CORRECT POSITIONS
-    fill_triples(tl, res, index1, index2, offset, rowsum, i, min_value, top_n, rowsum_div);
+    fill_triples(tl, res, index1, index2, offset, i, min_value, top_n);
     if (Progress::check_abort())
       stop("Aborted");
     p.increment(1);
