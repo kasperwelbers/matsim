@@ -35,21 +35,14 @@ m = Matrix::rsparsematrix(10,10,0.5)
 tcrossprod_sparse(m, group = c(1,1,1,2,2,2,3,3,3,3))
 
 date = seq.Date(as.Date('2010-01-01'), as.Date('2010-01-10'), by=1)
-tcrossprod_sparse(m, date = date, lwindow = 1, rwindow = 1)
-tcrossprod_sparse(m, date = date, lwindow = 2, rwindow = 2)
+tcrossprod_sparse(m, date = date, lwindow = -1, rwindow = 1)
+tcrossprod_sparse(m, date = date, lwindow = -2, rwindow = 2)
 
-## using conditional probability
-m = abs(Matrix::rsparsematrix(10,10,0.5))
-m[m>0] = 1
-
-t(t(tcrossprod_sparse(m)) / rowSums(m))
-tcrossprod_sparse(m, rowsum_div = T)
-
-## using the min function
+## using min(x,y) instead of prod(x,y) 
 m = abs(Matrix::rsparsematrix(10,10,0.5))
 
 tcrossprod_sparse(m, crossfun = 'min')
-tcrossprod_sparse(m, crossfun = 'min', rowsum_div = T) ## what percentage of 
+tcrossprod_sparse(m, crossfun = 'min', rowsum_div = T)
 ```
 
 Speed seems to be comparable to Matrix::crossprod(), with some speed-ups if filtering is used.
@@ -64,6 +57,7 @@ norm = sqrt(Matrix::colSums(m^2))
 m@x = m@x / norm[m@j+1]
 m = as(m, 'dgCMatrix')
 
+## verify that crossprod results are identical
 cp1 = tcrossprod_sparse(m)
 cp2 = tcrossprod(m)
 identical(as(cp1, 'dgCMatrix'), as(cp2, 'dgCMatrix'))
