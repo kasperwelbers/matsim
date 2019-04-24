@@ -1,3 +1,9 @@
+Deprecated
+=======
+
+This repository is no longer maintained, because the code (and the tcrossprod_sparse function) has been implemented in the [RNewsflow](https://github.com/kasperwelbers/RNewsflow) package.
+
+
 Example
 =======
 
